@@ -1,0 +1,31 @@
+name: Deploy Prod
+
+on:
+  workflow_run:
+    workflows: ["Build and Deploy"]
+    types:
+      - completed
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  deploy:
+    if: github.event.workflow_run.conclusion == 'success'
+    environment: prod
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact from Build and Deploy
+        uses: actions/download-artifact@v8
+        with:
+          name: octomatch
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ github.event.workflow_run.id }}
+          path: website
+      - name: Deploy to Prod
+        run: |
+          echo "Downloaded production artifact:"
+          tree website
+          echo "Demo deploy step: replace with your real deploy command."
